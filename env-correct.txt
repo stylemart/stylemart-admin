@@ -1,0 +1,19 @@
+# ============================================================
+# CORRECT .env.local FILE CONTENT
+# ============================================================
+# Copy this entire content to your .env.local file
+# Replace [YOUR-PASSWORD] with: iSpr97$v_2-+njS
+# ============================================================
+
+# Using Connection Pooler (port 6543) - works with IPv4
+DATABASE_URL=postgresql://postgres:iSpr97%24v_2-%2BnjS@db.bmwibujhnwmoyiaaahwo.supabase.co:6543/postgres?pgbouncer=true
+
+JWT_SECRET=stylemart-admin-secret-key-2026-xK9mP2vL
+JWT_EXPIRES_IN=7d
+
+# ============================================================
+# IMPORTANT NOTES:
+# 1. Password is URL-encoded: %24 = $, %2B = +
+# 2. Port changed from 5432 to 6543 (Connection Pooler)
+# 3. Added ?pgbouncer=true for connection pooling
+# ============================================================
