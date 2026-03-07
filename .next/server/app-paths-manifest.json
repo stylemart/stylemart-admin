@@ -1,14 +1,18 @@
 {
-  "/api/invitation-codes/route": "app/api/invitation-codes/route.js",
+  "/_not-found/page": "app/_not-found/page.js",
   "/api/withdrawals/route": "app/api/withdrawals/route.js",
-  "/api/users/route": "app/api/users/route.js",
+  "/api/recharges/route": "app/api/recharges/route.js",
+  "/api/invitation-codes/route": "app/api/invitation-codes/route.js",
+  "/api/orders/route": "app/api/orders/route.js",
   "/api/categories/route": "app/api/categories/route.js",
   "/api/products/route": "app/api/products/route.js",
+  "/api/users/route": "app/api/users/route.js",
   "/dashboard/users/page": "app/dashboard/users/page.js",
   "/dashboard/users/invitation-codes/page": "app/dashboard/users/invitation-codes/page.js",
   "/dashboard/users/verification/page": "app/dashboard/users/verification/page.js",
-  "/dashboard/recharges/page": "app/dashboard/recharges/page.js",
+  "/dashboard/orders/page": "app/dashboard/orders/page.js",
   "/dashboard/withdrawals/page": "app/dashboard/withdrawals/page.js",
+  "/dashboard/recharges/page": "app/dashboard/recharges/page.js",
   "/dashboard/products/page": "app/dashboard/products/page.js",
   "/dashboard/categories/page": "app/dashboard/categories/page.js"
 }

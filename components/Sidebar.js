@@ -121,7 +121,7 @@ const menuItems = [
     type: "divider",
   },
   {
-    label: "Agent Customer Service",
+    label: "Support Links",
     href: "/dashboard/operations/agent-cs",
     icon: FiPhone,
   },

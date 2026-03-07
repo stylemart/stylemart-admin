@@ -44,8 +44,8 @@ export async function PUT(request, { params }) {
     const { id } = await params;
     const body = await request.json();
     const {
-      name, name_pt, name_en, name_zh,
-      description, description_pt, description_en, description_zh,
+      name,
+      description,
       price, original_price, cost_price, currency,
       stock, sku, category_id, brand_id, thumbnail_url,
       is_active, is_featured, is_group_buy, is_treasure_snatch,
@@ -54,22 +54,27 @@ export async function PUT(request, { params }) {
     const result = await query(
       `UPDATE products SET
         name = COALESCE($1, name),
-        name_pt = $2, name_en = $3, name_zh = $4,
-        description = $5, description_pt = $6, description_en = $7, description_zh = $8,
-        price = COALESCE($9, price),
-        original_price = $10, cost_price = $11, currency = COALESCE($12, currency),
-        stock = COALESCE($13, stock),
-        sku = $14, category_id = $15, brand_id = $16, thumbnail_url = $17,
-        is_active = COALESCE($18, is_active),
-        is_featured = COALESCE($19, is_featured),
-        is_group_buy = COALESCE($20, is_group_buy),
-        is_treasure_snatch = COALESCE($21, is_treasure_snatch),
+        name_pt = COALESCE($1, name_pt),
+        name_en = COALESCE($1, name_en),
+        name_zh = COALESCE($1, name_zh),
+        description = COALESCE($2, description),
+        description_pt = COALESCE($2, description_pt),
+        description_en = COALESCE($2, description_en),
+        description_zh = COALESCE($2, description_zh),
+        price = COALESCE($3, price),
+        original_price = $4, cost_price = $5, currency = COALESCE($6, currency),
+        stock = COALESCE($7, stock),
+        sku = $8, category_id = $9, brand_id = $10, thumbnail_url = $11,
+        is_active = COALESCE($12, is_active),
+        is_featured = COALESCE($13, is_featured),
+        is_group_buy = COALESCE($14, is_group_buy),
+        is_treasure_snatch = COALESCE($15, is_treasure_snatch),
         updated_at = NOW()
-      WHERE id = $22
+      WHERE id = $16
       RETURNING *`,
       [
-        name, name_pt, name_en, name_zh,
-        description, description_pt, description_en, description_zh,
+        name, // Use same name for all language variants
+        description, // Use same description for all language variants
         price, original_price, cost_price, currency,
         stock, sku, category_id, brand_id, thumbnail_url,
         is_active, is_featured, is_group_buy, is_treasure_snatch,

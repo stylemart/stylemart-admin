@@ -1,6 +1,6 @@
 // ============================================================
 // PRODUCT FORM COMPONENT
-// Comprehensive product form with all fields
+// Clean, professional product form - English only
 // ============================================================
 
 "use client";
@@ -13,15 +13,9 @@ export default function ProductForm({ product, onSave, onCancel, categories = []
   const [formData, setFormData] = useState({
     // Basic Info
     name: product?.name || "",
-    name_pt: product?.name_pt || "",
-    name_en: product?.name_en || "",
-    name_zh: product?.name_zh || "",
     
     // Description
     description: product?.description || "",
-    description_pt: product?.description_pt || "",
-    description_en: product?.description_en || "",
-    description_zh: product?.description_zh || "",
     
     // Pricing
     price: product?.price || "",
@@ -83,7 +77,7 @@ export default function ProductForm({ product, onSave, onCancel, categories = []
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Product Name (English) *
+                Product Name *
               </label>
               <input
                 type="text"
@@ -91,49 +85,31 @@ export default function ProductForm({ product, onSave, onCancel, categories = []
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 className="input-field"
                 required
-                placeholder="Product name in English"
+                placeholder="Enter product name"
               />
             </div>
 
-            <div className="grid grid-cols-3 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Name (Portuguese)
-                </label>
-                <input
-                  type="text"
-                  value={formData.name_pt}
-                  onChange={(e) => setFormData({ ...formData, name_pt: e.target.value })}
-                  className="input-field"
-                  placeholder="Nome em português"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Name (Chinese)
-                </label>
-                <input
-                  type="text"
-                  value={formData.name_zh}
-                  onChange={(e) => setFormData({ ...formData, name_zh: e.target.value })}
-                  className="input-field"
-                  placeholder="中文名称"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Currency
-                </label>
-                <select
-                  value={formData.currency}
-                  onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
-                  className="input-field"
-                >
-                  <option value="BRL">BRL (R$)</option>
-                  <option value="USD">USD ($)</option>
-                  <option value="EUR">EUR (€)</option>
-                </select>
-              </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Currency
+              </label>
+              <select
+                value={formData.currency}
+                onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
+                className="input-field"
+              >
+                <option value="BRL">BRL (R$)</option>
+                <option value="USD">USD ($)</option>
+                <option value="EUR">EUR (€)</option>
+                <option value="GBP">GBP (£)</option>
+                <option value="JPY">JPY (¥)</option>
+                <option value="CNY">CNY (¥)</option>
+                <option value="INR">INR (₹)</option>
+                <option value="PKR">PKR (₨)</option>
+              </select>
+              <p className="text-xs text-gray-500 mt-1">
+                Select the currency for this product
+              </p>
             </div>
 
             {/* Image Upload */}
@@ -189,39 +165,18 @@ export default function ProductForm({ product, onSave, onCancel, categories = []
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Description (English)
+                Product Description
               </label>
               <textarea
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 className="input-field"
-                rows={4}
-                placeholder="Product description in English"
+                rows={6}
+                placeholder="Enter detailed product description..."
               />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Description (Portuguese)
-              </label>
-              <textarea
-                value={formData.description_pt}
-                onChange={(e) => setFormData({ ...formData, description_pt: e.target.value })}
-                className="input-field"
-                rows={4}
-                placeholder="Descrição do produto em português"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Description (Chinese)
-              </label>
-              <textarea
-                value={formData.description_zh}
-                onChange={(e) => setFormData({ ...formData, description_zh: e.target.value })}
-                className="input-field"
-                rows={4}
-                placeholder="产品描述（中文）"
-              />
+              <p className="text-xs text-gray-500 mt-1">
+                Provide a clear and detailed description of the product
+              </p>
             </div>
           </div>
         )}
@@ -245,7 +200,7 @@ export default function ProductForm({ product, onSave, onCancel, categories = []
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Original Price (for discounts)
+                Original Price (Optional)
               </label>
               <input
                 type="number"
@@ -256,12 +211,12 @@ export default function ProductForm({ product, onSave, onCancel, categories = []
                 placeholder="0.00"
               />
               <p className="text-xs text-gray-500 mt-1">
-                Leave empty if no discount. Used to show "was R$ X, now R$ Y"
+                Used to show discount. Leave empty if no discount applies.
               </p>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Cost Price (admin only)
+                Cost Price (Internal)
               </label>
               <input
                 type="number"
@@ -272,7 +227,7 @@ export default function ProductForm({ product, onSave, onCancel, categories = []
                 placeholder="0.00"
               />
               <p className="text-xs text-gray-500 mt-1">
-                Internal cost for profit calculation (not shown to customers)
+                Internal cost for profit calculation (not visible to customers)
               </p>
             </div>
           </div>
@@ -291,6 +246,7 @@ export default function ProductForm({ product, onSave, onCancel, categories = []
                 onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
                 className="input-field"
                 placeholder="0"
+                min="0"
               />
             </div>
             <div>
@@ -305,7 +261,7 @@ export default function ProductForm({ product, onSave, onCancel, categories = []
                 placeholder="PROD-001"
               />
               <p className="text-xs text-gray-500 mt-1">
-                Unique product identifier
+                Unique product identifier for inventory management
               </p>
             </div>
           </div>
@@ -334,7 +290,7 @@ export default function ProductForm({ product, onSave, onCancel, categories = []
                   className="w-4 h-4 text-primary rounded"
                 />
                 <span className="text-sm font-medium text-gray-700">
-                  Featured (shown in daily push/homepage)
+                  Featured (shown on homepage)
                 </span>
               </label>
               <label className="flex items-center gap-2">

@@ -81,8 +81,8 @@ export async function POST(request) {
 
     const body = await request.json();
     const {
-      name, name_pt, name_en, name_zh,
-      description, description_pt, description_en, description_zh,
+      name,
+      description,
       price, original_price, cost_price, currency,
       stock, sku, category_id, brand_id, thumbnail_url,
       is_active, is_featured, is_group_buy, is_treasure_snatch,
@@ -104,12 +104,15 @@ export async function POST(request) {
         stock, sku, category_id, brand_id, thumbnail_url,
         is_active, is_featured, is_group_buy, is_treasure_snatch
       ) VALUES (
-        $1, $2, $3, $4, $5, $6, $7, $8, $9, $10,
-        $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21
+        $1, $1, $1, $1,
+        $2, $2, $2, $2,
+        $3, $4, $5, $6,
+        $7, $8, $9, $10, $11,
+        $12, $13, $14, $15
       ) RETURNING *`,
       [
-        name, name_pt || null, name_en || null, name_zh || null,
-        description || null, description_pt || null, description_en || null, description_zh || null,
+        name, // Use same name for all language variants
+        description || null, // Use same description for all language variants
         price, original_price || null, cost_price || null, currency || "BRL",
         stock || 0, sku || null, category_id || null, brand_id || null, thumbnail_url || null,
         is_active !== false, is_featured || false, is_group_buy || false, is_treasure_snatch || false,

@@ -1,52 +1,48 @@
 // ============================================================
-// AGENT CUSTOMER SERVICE PAGE
-// Manage agent customer service hotlines
-// Matches reference: https://admin.shein-bx.cyou/operations/agentCsList
+// SUPPORT LINKS PAGE
+// Manage support links (Customer Service & Finance Department)
+// Admin adds Telegram/WhatsApp/other links that users click
 // ============================================================
 
 "use client";
 
 import { useState, useEffect } from "react";
-import { FiPlus, FiEdit2, FiTrash2, FiSearch, FiX } from "react-icons/fi";
+import { FiPlus, FiEdit2, FiTrash2, FiX, FiExternalLink } from "react-icons/fi";
 import Breadcrumb from "@/components/Breadcrumb";
 
-export default function AgentCSPage() {
-  const [agents, setAgents] = useState([]);
+export default function SupportLinksPage() {
+  const [links, setLinks] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
-  const [editingAgent, setEditingAgent] = useState(null);
+  const [editingLink, setEditingLink] = useState(null);
   const [formData, setFormData] = useState({
-    proxy_account: "",
     customer_service_name: "",
     customer_service_link: "",
     status: "active",
   });
 
-  async function fetchAgents() {
+  async function fetchLinks() {
     setLoading(true);
     try {
-      // TODO: Replace with actual API call
-      // const res = await fetch("/api/operations/agent-cs");
-      // const data = await res.json();
-      // setAgents(data.agents || []);
-      
-      // Mock empty for now
-      setAgents([]);
+      const token = localStorage.getItem("token");
+      const res = await fetch("/api/operations/agent-cs", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      setLinks(data.agents || []);
     } catch (error) {
-      console.error("Fetch agents error:", error);
+      console.error("Fetch support links error:", error);
     }
     setLoading(false);
   }
 
   useEffect(() => {
-    fetchAgents();
+    fetchLinks();
   }, []);
 
   function openCreateModal() {
-    setEditingAgent(null);
+    setEditingLink(null);
     setFormData({
-      proxy_account: "",
       customer_service_name: "",
       customer_service_link: "",
       status: "active",
@@ -54,13 +50,12 @@ export default function AgentCSPage() {
     setShowModal(true);
   }
 
-  function openEditModal(agent) {
-    setEditingAgent(agent);
+  function openEditModal(link) {
+    setEditingLink(link);
     setFormData({
-      proxy_account: agent.proxy_account || "",
-      customer_service_name: agent.customer_service_name || "",
-      customer_service_link: agent.customer_service_link || "",
-      status: agent.status || "active",
+      customer_service_name: link.customer_service_name || "",
+      customer_service_link: link.customer_service_link || "",
+      status: link.status || "active",
     });
     setShowModal(true);
   }
@@ -68,8 +63,10 @@ export default function AgentCSPage() {
   async function handleSave(e) {
     e.preventDefault();
     const token = localStorage.getItem("token");
-    const url = editingAgent ? `/api/operations/agent-cs/${editingAgent.id}` : "/api/operations/agent-cs";
-    const method = editingAgent ? "PUT" : "POST";
+    const url = editingLink
+      ? `/api/operations/agent-cs/${editingLink.id}`
+      : "/api/operations/agent-cs";
+    const method = editingLink ? "PUT" : "POST";
 
     try {
       const res = await fetch(url, {
@@ -78,20 +75,28 @@ export default function AgentCSPage() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          proxy_account: formData.customer_service_name,
+          customer_service_name: formData.customer_service_name,
+          customer_service_link: formData.customer_service_link,
+          status: formData.status,
+        }),
       });
 
       if (res.ok) {
         setShowModal(false);
-        fetchAgents();
+        fetchLinks();
+      } else {
+        const data = await res.json();
+        alert(data.error || "Failed to save");
       }
     } catch (error) {
-      console.error("Save agent error:", error);
+      console.error("Save support link error:", error);
     }
   }
 
   async function handleDelete(id) {
-    if (!confirm("Are you sure you want to delete this agent customer service?")) return;
+    if (!confirm("Are you sure you want to delete this support link?")) return;
     const token = localStorage.getItem("token");
 
     try {
@@ -99,10 +104,35 @@ export default function AgentCSPage() {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
-      fetchAgents();
+      fetchLinks();
     } catch (error) {
-      console.error("Delete agent error:", error);
+      console.error("Delete support link error:", error);
     }
+  }
+
+  // Detect platform from link
+  function getPlatformBadge(link) {
+    if (!link) return null;
+    const lower = link.toLowerCase();
+    if (lower.includes("t.me") || lower.includes("telegram")) {
+      return (
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full bg-blue-100 text-blue-700">
+          Telegram
+        </span>
+      );
+    }
+    if (lower.includes("wa.me") || lower.includes("whatsapp")) {
+      return (
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full bg-green-100 text-green-700">
+          WhatsApp
+        </span>
+      );
+    }
+    return (
+      <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full bg-gray-100 text-gray-700">
+        Link
+      </span>
+    );
   }
 
   return (
@@ -112,51 +142,57 @@ export default function AgentCSPage() {
         items={[
           { label: "Front Page", href: "/dashboard" },
           { label: "Operations Configuration", href: "/dashboard/operations" },
-          { label: "Agent Customer Service Hotline" },
+          { label: "Support Links" },
         ]}
       />
 
       {/* Page Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">Agent Customer Service Hotline</h1>
-          <p className="text-gray-500 text-sm mt-1">Manage agent customer service configurations</p>
+          <h1 className="text-2xl font-bold text-gray-800">Support Links</h1>
+          <p className="text-gray-500 text-sm mt-1">
+            Manage customer service and finance department links (Telegram, WhatsApp, etc.)
+          </p>
         </div>
         <button onClick={openCreateModal} className="btn-primary flex items-center gap-2">
           <FiPlus size={18} />
-          New
+          Add Link
         </button>
       </div>
 
-      {/* Search Bar */}
-      <form onSubmit={(e) => { e.preventDefault(); fetchAgents(); }} className="mb-6">
-        <div className="flex gap-2">
-          <div className="relative flex-1 max-w-md">
-            <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search by proxy account or name..."
-              className="input-field pl-10"
-            />
-          </div>
-          <button type="submit" className="btn-primary">Search</button>
-        </div>
-      </form>
+      {/* Info Card */}
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+        <p className="text-sm text-blue-800">
+          <strong>How it works:</strong> Add support links here. In the storefront, users will see
+          "Customer Service" and "Finance Department" buttons. When they click, they'll be redirected
+          to the platform link you've configured (Telegram, WhatsApp, etc.).
+        </p>
+      </div>
 
-      {/* Agents Table */}
+      {/* Links Table */}
       <div className="table-container">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-gray-50">
               <tr>
-                <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">ID</th>
-                <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Proxy Account</th>
-                <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Customer Service Name</th>
-                <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Customer Service Link</th>
-                <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">State</th>
-                <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Operate</th>
+                <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">
+                  ID
+                </th>
+                <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">
+                  Department
+                </th>
+                <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">
+                  Platform
+                </th>
+                <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">
+                  Link
+                </th>
+                <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">
+                  Status
+                </th>
+                <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -166,43 +202,55 @@ export default function AgentCSPage() {
                     Loading...
                   </td>
                 </tr>
-              ) : agents.length === 0 ? (
+              ) : links.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="px-6 py-12 text-center text-gray-400">
-                    No data available.
+                    No support links configured yet. Click "Add Link" to get started.
                   </td>
                 </tr>
               ) : (
-                agents.map((agent) => (
-                  <tr key={agent.id} className="border-b border-gray-50 hover:bg-gray-50">
-                    <td className="px-6 py-4 text-sm text-gray-500">{agent.id}</td>
-                    <td className="px-6 py-4 text-sm text-gray-700">{agent.proxy_account}</td>
-                    <td className="px-6 py-4 text-sm text-gray-700">{agent.customer_service_name}</td>
-                    <td className="px-6 py-4 text-sm text-blue-500 hover:text-blue-700">
-                      <a href={agent.customer_service_link} target="_blank" rel="noopener noreferrer" className="truncate max-w-xs block">
-                        {agent.customer_service_link}
+                links.map((link) => (
+                  <tr key={link.id} className="border-b border-gray-50 hover:bg-gray-50">
+                    <td className="px-6 py-4 text-sm text-gray-500">{link.id}</td>
+                    <td className="px-6 py-4 text-sm font-medium text-gray-800">
+                      {link.customer_service_name}
+                    </td>
+                    <td className="px-6 py-4">
+                      {getPlatformBadge(link.customer_service_link)}
+                    </td>
+                    <td className="px-6 py-4 text-sm">
+                      <a
+                        href={link.customer_service_link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-500 hover:text-blue-700 flex items-center gap-1 truncate max-w-xs"
+                      >
+                        {link.customer_service_link}
+                        <FiExternalLink size={12} />
                       </a>
                     </td>
                     <td className="px-6 py-4">
-                      <span className={`inline-block px-2 py-1 text-xs font-medium rounded-full ${
-                        agent.status === "active"
-                          ? "bg-green-100 text-green-700"
-                          : "bg-red-100 text-red-700"
-                      }`}>
-                        {agent.status || "inactive"}
+                      <span
+                        className={`inline-block px-2 py-1 text-xs font-medium rounded-full ${
+                          link.status === "active"
+                            ? "bg-green-100 text-green-700"
+                            : "bg-red-100 text-red-700"
+                        }`}
+                      >
+                        {link.status === "active" ? "Active" : "Inactive"}
                       </span>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
                         <button
-                          onClick={() => openEditModal(agent)}
+                          onClick={() => openEditModal(link)}
                           className="p-2 text-blue-500 hover:bg-blue-50 rounded-lg transition-colors"
                           title="Edit"
                         >
                           <FiEdit2 size={16} />
                         </button>
                         <button
-                          onClick={() => handleDelete(agent.id)}
+                          onClick={() => handleDelete(link.id)}
                           className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                           title="Delete"
                         >
@@ -221,49 +269,59 @@ export default function AgentCSPage() {
       {/* Create/Edit Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl w-full max-w-lg">
+          <div className="bg-white rounded-2xl w-full max-w-md">
             <div className="flex items-center justify-between px-6 py-4 border-b">
               <h2 className="text-lg font-semibold">
-                {editingAgent ? "Edit Agent Customer Service" : "New Agent Customer Service"}
+                {editingLink ? "Edit Support Link" : "Add Support Link"}
               </h2>
-              <button onClick={() => setShowModal(false)} className="p-2 hover:bg-gray-100 rounded-lg">
+              <button
+                onClick={() => setShowModal(false)}
+                className="p-2 hover:bg-gray-100 rounded-lg"
+              >
                 <FiX size={20} />
               </button>
             </div>
-            <form onSubmit={handleSave} className="p-6 space-y-4">
+            <form onSubmit={handleSave} className="p-6 space-y-5">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Proxy Account *</label>
-                <input
-                  type="text"
-                  value={formData.proxy_account}
-                  onChange={(e) => setFormData({ ...formData, proxy_account: e.target.value })}
-                  className="input-field"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Customer Service Name *</label>
-                <input
-                  type="text"
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                  Department *
+                </label>
+                <select
                   value={formData.customer_service_name}
-                  onChange={(e) => setFormData({ ...formData, customer_service_name: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, customer_service_name: e.target.value })
+                  }
                   className="input-field"
                   required
-                />
+                >
+                  <option value="">Select department</option>
+                  <option value="Customer Service">Customer Service</option>
+                  <option value="Finance Department">Finance Department</option>
+                </select>
               </div>
+
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Customer Service Link *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                  WhatsApp / Telegram Link *
+                </label>
                 <input
                   type="url"
                   value={formData.customer_service_link}
-                  onChange={(e) => setFormData({ ...formData, customer_service_link: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, customer_service_link: e.target.value })
+                  }
                   className="input-field"
-                  placeholder="https://..."
+                  placeholder="https://wa.me/923001234567"
                   required
                 />
+                <p className="text-xs text-gray-500 mt-1.5">
+                  WhatsApp: <span className="font-mono text-gray-600">https://wa.me/923XXXXXXXXX</span><br />
+                  Telegram: <span className="font-mono text-gray-600">https://t.me/username</span>
+                </p>
               </div>
+
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Status</label>
                 <select
                   value={formData.status}
                   onChange={(e) => setFormData({ ...formData, status: e.target.value })}
@@ -273,12 +331,17 @@ export default function AgentCSPage() {
                   <option value="inactive">Inactive</option>
                 </select>
               </div>
+
               <div className="flex justify-end gap-3 pt-4 border-t">
-                <button type="button" onClick={() => setShowModal(false)} className="btn-outline">
+                <button
+                  type="button"
+                  onClick={() => setShowModal(false)}
+                  className="btn-outline"
+                >
                   Cancel
                 </button>
                 <button type="submit" className="btn-primary">
-                  {editingAgent ? "Update" : "Create"}
+                  {editingLink ? "Update" : "Create"}
                 </button>
               </div>
             </form>

@@ -31,15 +31,20 @@
       "static/chunks/main-app.js",
       "static/chunks/app/dashboard/products/page.js"
     ],
-    "/dashboard/users/page": [
+    "/dashboard/categories/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/dashboard/users/page.js"
+      "static/chunks/app/dashboard/categories/page.js"
     ],
     "/dashboard/users/verification/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/dashboard/users/verification/page.js"
+    ],
+    "/dashboard/users/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/dashboard/users/page.js"
     ],
     "/dashboard/orders/page": [
       "static/chunks/webpack.js",
@@ -56,20 +61,20 @@
       "static/chunks/main-app.js",
       "static/chunks/app/dashboard/recharges/page.js"
     ],
-    "/dashboard/categories/page": [
+    "/dashboard/operations/agent-cs/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/dashboard/categories/page.js"
+      "static/chunks/app/dashboard/operations/agent-cs/page.js"
     ],
     "/dashboard/users/invitation-codes/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/dashboard/users/invitation-codes/page.js"
     ],
-    "/dashboard/operations/agent-cs/page": [
+    "/_not-found/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/dashboard/operations/agent-cs/page.js"
+      "static/chunks/app/_not-found/page.js"
     ]
   }
 }

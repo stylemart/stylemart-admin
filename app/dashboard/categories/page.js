@@ -1,6 +1,6 @@
 // ============================================================
 // CATEGORIES MANAGEMENT PAGE
-// List, add, edit, delete categories
+// List, add, edit, delete categories - English only
 // ============================================================
 
 "use client";
@@ -14,7 +14,7 @@ export default function CategoriesPage() {
   const [showModal, setShowModal] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
   const [formData, setFormData] = useState({
-    name: "", name_pt: "", name_en: "", icon_url: "", image_url: "",
+    name: "", icon_url: "", image_url: "",
     parent_id: "", sort_order: 0, is_active: true,
   });
 
@@ -35,14 +35,14 @@ export default function CategoriesPage() {
 
   function openCreateModal() {
     setEditingCategory(null);
-    setFormData({ name: "", name_pt: "", name_en: "", icon_url: "", image_url: "", parent_id: "", sort_order: 0, is_active: true });
+    setFormData({ name: "", icon_url: "", image_url: "", parent_id: "", sort_order: 0, is_active: true });
     setShowModal(true);
   }
 
   function openEditModal(cat) {
     setEditingCategory(cat);
     setFormData({
-      name: cat.name || "", name_pt: cat.name_pt || "", name_en: cat.name_en || "",
+      name: cat.name || "",
       icon_url: cat.icon_url || "", image_url: cat.image_url || "",
       parent_id: cat.parent_id || "", sort_order: cat.sort_order || 0, is_active: cat.is_active,
     });
@@ -106,8 +106,6 @@ export default function CategoriesPage() {
               <tr>
                 <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">ID</th>
                 <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Name</th>
-                <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Portuguese</th>
-                <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">English</th>
                 <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Order</th>
                 <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Status</th>
                 <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Actions</th>
@@ -115,16 +113,14 @@ export default function CategoriesPage() {
             </thead>
             <tbody>
               {loading ? (
-                <tr><td colSpan={7} className="px-6 py-12 text-center text-gray-400">Loading...</td></tr>
+                <tr><td colSpan={5} className="px-6 py-12 text-center text-gray-400">Loading...</td></tr>
               ) : categories.length === 0 ? (
-                <tr><td colSpan={7} className="px-6 py-12 text-center text-gray-400">No categories yet.</td></tr>
+                <tr><td colSpan={5} className="px-6 py-12 text-center text-gray-400">No categories yet.</td></tr>
               ) : (
                 categories.map((cat) => (
                   <tr key={cat.id} className="border-b border-gray-50 hover:bg-gray-50">
                     <td className="px-6 py-4 text-sm text-gray-500">{cat.id}</td>
                     <td className="px-6 py-4 text-sm font-medium text-gray-800">{cat.name}</td>
-                    <td className="px-6 py-4 text-sm text-gray-600">{cat.name_pt || "—"}</td>
-                    <td className="px-6 py-4 text-sm text-gray-600">{cat.name_en || "—"}</td>
                     <td className="px-6 py-4 text-sm text-gray-500">{cat.sort_order}</td>
                     <td className="px-6 py-4">
                       <span className={`inline-block px-2 py-1 text-xs font-medium rounded-full ${
@@ -158,21 +154,11 @@ export default function CategoriesPage() {
             <form onSubmit={handleSave} className="p-6 space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Category Name *</label>
-                <input type="text" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} className="input-field" required />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Portuguese Name</label>
-                  <input type="text" value={formData.name_pt} onChange={(e) => setFormData({ ...formData, name_pt: e.target.value })} className="input-field" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">English Name</label>
-                  <input type="text" value={formData.name_en} onChange={(e) => setFormData({ ...formData, name_en: e.target.value })} className="input-field" />
-                </div>
+                <input type="text" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} className="input-field" required placeholder="Enter category name" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Sort Order</label>
-                <input type="number" value={formData.sort_order} onChange={(e) => setFormData({ ...formData, sort_order: e.target.value })} className="input-field" />
+                <input type="number" value={formData.sort_order} onChange={(e) => setFormData({ ...formData, sort_order: e.target.value })} className="input-field" placeholder="0" />
               </div>
               <div className="flex items-center gap-2">
                 <input type="checkbox" id="cat_active" checked={formData.is_active} onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })} className="w-4 h-4" />

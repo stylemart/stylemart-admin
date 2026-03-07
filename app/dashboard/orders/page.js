@@ -1,6 +1,6 @@
 // ============================================================
 // ORDERS MANAGEMENT PAGE
-// List and manage orders
+// List and manage orders with Buy/Buy-Back status indicators
 // ============================================================
 
 "use client";
@@ -8,7 +8,7 @@
 import { useState, useEffect } from "react";
 import { FiFilter } from "react-icons/fi";
 
-const STATUS_OPTIONS = ["all", "pending", "paid", "shipped", "delivered", "cancelled", "refunded"];
+const STATUS_OPTIONS = ["all", "pending", "paid", "buy_back", "shipped", "delivered", "cancelled", "refunded"];
 
 export default function OrdersPage() {
   const [orders, setOrders] = useState([]);
@@ -33,7 +33,6 @@ export default function OrdersPage() {
 
   useEffect(() => { fetchOrders(); }, [statusFilter]);
 
-  // Update order status
   async function updateStatus(orderId, newStatus) {
     const token = localStorage.getItem("token");
     try {
@@ -48,17 +47,54 @@ export default function OrdersPage() {
     }
   }
 
-  const statusColor = (status) => {
-    const colors = {
-      pending: "bg-gray-100 text-gray-700",
-      paid: "bg-yellow-100 text-yellow-700",
-      shipped: "bg-blue-100 text-blue-700",
-      delivered: "bg-green-100 text-green-700",
-      cancelled: "bg-red-100 text-red-700",
-      refunded: "bg-purple-100 text-purple-700",
+  // Status badge with colors (unchanged)
+  function getStatusBadge(status) {
+    const config = {
+      pending: { label: "Pending", bg: "bg-gray-100", text: "text-gray-700" },
+      paid: { label: "Purchased", bg: "bg-green-100", text: "text-green-700" },
+      buy_back: { label: "Bought Back", bg: "bg-red-100", text: "text-red-700" },
+      shipped: { label: "Shipped", bg: "bg-blue-100", text: "text-blue-700" },
+      delivered: { label: "Delivered", bg: "bg-purple-100", text: "text-purple-700" },
+      cancelled: { label: "Cancelled", bg: "bg-yellow-100", text: "text-yellow-700" },
+      refunded: { label: "Refunded", bg: "bg-orange-100", text: "text-orange-700" },
     };
-    return colors[status] || "bg-gray-100 text-gray-700";
-  };
+    const c = config[status] || config.pending;
+    return (
+      <span className={`inline-block px-2.5 py-1 text-xs font-semibold rounded-full ${c.bg} ${c.text}`}>
+        {c.label}
+      </span>
+    );
+  }
+
+  // Horizontal color indicator bar (shows next to status)
+  function getStatusIndicator(status) {
+    if (status === "buy_back") {
+      // Full red — bought AND sold back
+      return (
+        <div className="w-8 h-3 rounded-sm bg-red-500" title="Bought Back" />
+      );
+    }
+    if (status === "paid") {
+      // Half red — only bought, not sold back yet
+      return (
+        <div className="w-8 h-3 rounded-sm overflow-hidden flex flex-row" title="Purchased (not sold back)">
+          <div className="flex-1 bg-red-500" />
+          <div className="flex-1 bg-red-200" />
+        </div>
+      );
+    }
+    // Other
+    return (
+      <div className="w-8 h-3 rounded-sm bg-gray-200" title={status} />
+    );
+  }
+
+  function getFilterLabel(s) {
+    if (s === "all") return "All";
+    if (s === "paid") return "Purchased";
+    if (s === "buy_back") return "Bought Back";
+    return s.charAt(0).toUpperCase() + s.slice(1);
+  }
 
   return (
     <div>
@@ -69,6 +105,25 @@ export default function OrdersPage() {
         </div>
       </div>
 
+      {/* Legend */}
+      <div className="flex items-center gap-6 mb-4 px-1">
+        <div className="flex items-center gap-2 text-xs text-gray-500">
+          <div className="w-6 h-3 rounded-sm overflow-hidden flex flex-row">
+            <div className="flex-1 bg-red-500" />
+            <div className="flex-1 bg-red-200" />
+          </div>
+          <span>Purchased (not sold back)</span>
+        </div>
+        <div className="flex items-center gap-2 text-xs text-gray-500">
+          <div className="w-6 h-3 rounded-sm bg-red-500" />
+          <span>Bought Back (completed)</span>
+        </div>
+        <div className="flex items-center gap-2 text-xs text-gray-500">
+          <div className="w-6 h-3 rounded-sm bg-gray-200" />
+          <span>Other</span>
+        </div>
+      </div>
+
       {/* Status Filter */}
       <div className="flex items-center gap-2 mb-6 flex-wrap">
         <FiFilter size={16} className="text-gray-400" />
@@ -76,13 +131,13 @@ export default function OrdersPage() {
           <button
             key={s}
             onClick={() => setStatusFilter(s)}
-            className={`px-3 py-1.5 rounded-full text-xs font-medium capitalize transition-colors ${
+            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
               statusFilter === s
                 ? "bg-primary text-white"
                 : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"
             }`}
           >
-            {s}
+            {getFilterLabel(s)}
           </button>
         ))}
       </div>
@@ -93,13 +148,13 @@ export default function OrdersPage() {
           <table className="w-full">
             <thead className="bg-gray-50">
               <tr>
-                <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Order #</th>
-                <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Customer</th>
-                <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Amount</th>
-                <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Payment</th>
-                <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Status</th>
-                <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Date</th>
-                <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Actions</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Order #</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Customer</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Amount</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Payment</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Status</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Date</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -110,32 +165,37 @@ export default function OrdersPage() {
               ) : (
                 orders.map((order) => (
                   <tr key={order.id} className="border-b border-gray-50 hover:bg-gray-50">
-                    <td className="px-6 py-4 text-sm font-medium text-primary">{order.order_number}</td>
-                    <td className="px-6 py-4 text-sm text-gray-700">{order.customer_name || order.customer_email || "—"}</td>
-                    <td className="px-6 py-4 text-sm font-medium text-gray-800">
-                      R$ {parseFloat(order.total_amount).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                    <td className="px-4 py-4 text-sm font-medium text-primary">{order.order_number}</td>
+                    <td className="px-4 py-4 text-sm text-gray-700">
+                      {order.customer_name || order.customer_email || "—"}
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-4 py-4 text-sm font-medium text-gray-800">
+                      R$ {Math.round(parseFloat(order.total_amount))}
+                    </td>
+                    <td className="px-4 py-4">
                       <span className={`inline-block px-2 py-1 text-xs font-medium rounded-full ${
                         order.payment_status === "paid" ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-600"
                       }`}>
                         {order.payment_status || "unpaid"}
                       </span>
                     </td>
-                    <td className="px-6 py-4">
-                      <span className={`inline-block px-2 py-1 text-xs font-medium rounded-full capitalize ${statusColor(order.status)}`}>
-                        {order.status}
-                      </span>
+                    <td className="px-4 py-4">
+                      <div className="flex items-center gap-2">
+                        {getStatusBadge(order.status)}
+                        {getStatusIndicator(order.status)}
+                      </div>
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-500">{new Date(order.created_at).toLocaleDateString()}</td>
-                    <td className="px-6 py-4">
+                    <td className="px-4 py-4 text-sm text-gray-500">
+                      {new Date(order.created_at).toLocaleDateString()}
+                    </td>
+                    <td className="px-4 py-4">
                       <select
                         value={order.status}
                         onChange={(e) => updateStatus(order.id, e.target.value)}
-                        className="text-xs border border-gray-200 rounded-lg px-2 py-1 focus:outline-none focus:ring-1 focus:ring-primary"
+                        className="text-xs border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary bg-white"
                       >
                         {STATUS_OPTIONS.filter((s) => s !== "all").map((s) => (
-                          <option key={s} value={s}>{s}</option>
+                          <option key={s} value={s}>{getFilterLabel(s)}</option>
                         ))}
                       </select>
                     </td>
