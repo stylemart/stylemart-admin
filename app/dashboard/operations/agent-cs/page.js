@@ -76,7 +76,6 @@ export default function SupportLinksPage() {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          proxy_account: formData.customer_service_name,
           customer_service_name: formData.customer_service_name,
           customer_service_link: formData.customer_service_link,
           status: formData.status,

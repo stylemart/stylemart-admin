@@ -9,7 +9,6 @@ import { requireAdmin } from "@/lib/auth";
 
 export async function GET(request) {
   try {
-    // Check if admin is authenticated
     const authResult = await requireAdmin(request);
     if (authResult.error) {
       return NextResponse.json(
@@ -20,7 +19,9 @@ export async function GET(request) {
 
     // Get fresh admin data from database
     const result = await query(
-      "SELECT id, username, full_name, email, phone, role, avatar_url, last_login_at, created_at FROM admin_users WHERE id = $1",
+      `SELECT id, username, full_name, email, phone, role, avatar_url, 
+              parent_admin_id, storefront_code, last_login_at, created_at 
+       FROM admin_users WHERE id = $1`,
       [authResult.admin.id]
     );
 
@@ -31,7 +32,24 @@ export async function GET(request) {
       );
     }
 
-    return NextResponse.json({ admin: result.rows[0] });
+    const admin = result.rows[0];
+
+    // If sub_admin, also get their user count
+    let userCount = 0;
+    if (admin.role === "sub_admin") {
+      const countResult = await query(
+        "SELECT COUNT(*) as count FROM users WHERE admin_owner_id = $1",
+        [admin.id]
+      );
+      userCount = parseInt(countResult.rows[0].count);
+    }
+
+    return NextResponse.json({
+      admin: {
+        ...admin,
+        user_count: userCount,
+      },
+    });
   } catch (error) {
     console.error("Auth me error:", error);
     return NextResponse.json(

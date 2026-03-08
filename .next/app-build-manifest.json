@@ -16,6 +16,11 @@
       "static/chunks/main-app.js",
       "static/chunks/app/login/page.js"
     ],
+    "/setup/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/setup/page.js"
+    ],
     "/dashboard/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
@@ -26,15 +31,10 @@
       "static/chunks/main-app.js",
       "static/chunks/app/dashboard/layout.js"
     ],
-    "/dashboard/products/page": [
+    "/dashboard/users/invitation-codes/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/dashboard/products/page.js"
-    ],
-    "/dashboard/categories/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/dashboard/categories/page.js"
+      "static/chunks/app/dashboard/users/invitation-codes/page.js"
     ],
     "/dashboard/users/verification/page": [
       "static/chunks/webpack.js",
@@ -61,20 +61,15 @@
       "static/chunks/main-app.js",
       "static/chunks/app/dashboard/recharges/page.js"
     ],
-    "/dashboard/operations/agent-cs/page": [
+    "/dashboard/products/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/dashboard/operations/agent-cs/page.js"
+      "static/chunks/app/dashboard/products/page.js"
     ],
-    "/dashboard/users/invitation-codes/page": [
+    "/dashboard/sub-admins/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/dashboard/users/invitation-codes/page.js"
-    ],
-    "/_not-found/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/_not-found/page.js"
+      "static/chunks/app/dashboard/sub-admins/page.js"
     ]
   }
 }

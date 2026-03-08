@@ -73,12 +73,25 @@ export default function UsersPage() {
   async function fetchUsers(page = 1) {
     setLoading(true);
     try {
+      const token = localStorage.getItem("token");
       const params = new URLSearchParams({ page, limit: 20 });
       if (search) params.append("search", search);
-      const res = await fetch(`/api/users?${params}`);
+      const res = await fetch(`/api/users?${params}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       const data = await res.json();
-      setUsers(data.users || []);
-      setPagination(data.pagination || {});
+      if (res.ok) {
+        setUsers(data.users || []);
+        setPagination(data.pagination || {});
+      } else {
+        console.error("Fetch users error:", data.error);
+        if (res.status === 401) {
+          // Token expired or invalid - redirect to login
+          localStorage.removeItem("token");
+          localStorage.removeItem("admin");
+          window.location.href = "/login";
+        }
+      }
     } catch (error) {
       console.error("Fetch users error:", error);
     }

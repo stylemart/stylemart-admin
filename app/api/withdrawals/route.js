@@ -1,6 +1,8 @@
 // ============================================================
 // /api/withdrawals
-// GET - List all withdrawal requests (admin only)
+// GET - List withdrawal requests (filtered by admin role)
+// Super Admin: sees ALL withdrawals
+// Sub Admin: sees ONLY withdrawals from their users
 // ============================================================
 
 import { NextResponse } from "next/server";
@@ -17,81 +19,68 @@ export async function GET(request) {
       );
     }
 
+    const admin = authResult.admin;
     const { searchParams } = new URL(request.url);
-    let status = searchParams.get("status") || "all"; // all, pending, completed, cancelled, approved, rejected
+    let status = searchParams.get("status") || "all";
     const page = parseInt(searchParams.get("page") || "1", 10);
     const limit = parseInt(searchParams.get("limit") || "50", 10);
     const offset = (page - 1) * limit;
 
-    // Map "approved" to "completed" and "rejected" to "cancelled" for database query
-    if (status === "approved") {
-      status = "completed";
-    } else if (status === "rejected") {
-      status = "cancelled";
+    if (status === "approved") status = "completed";
+    else if (status === "rejected") status = "cancelled";
+
+    // Build dynamic query
+    let whereClause = "WHERE wt.type = 'withdraw'";
+    const params = [];
+
+    // Sub Admin filter
+    if (admin.role === "sub_admin") {
+      params.push(admin.id);
+      whereClause += ` AND u.admin_owner_id = $${params.length}`;
     }
 
-    // Get withdrawal requests with user info
-    const result = await query(
-      `SELECT 
-        wt.id,
-        wt.user_id,
-        wt.amount,
-        wt.balance_before,
-        wt.balance_after,
-        wt.status,
-        wt.description,
-        wt.admin_note,
-        wt.processed_at,
-        wt.created_at,
-        u.nickname,
-        u.full_name,
-        u.email,
-        u.phone
-      FROM wallet_transactions wt
-      JOIN users u ON wt.user_id = u.id
-      WHERE wt.type = 'withdraw'
-        ${status !== "all" ? `AND wt.status = $1` : ""}
-      ORDER BY wt.created_at DESC
-      LIMIT $${status !== "all" ? "2" : "1"} OFFSET $${status !== "all" ? "3" : "2"}`,
-      status !== "all" ? [status, limit, offset] : [limit, offset]
-    );
+    if (status !== "all") {
+      params.push(status);
+      whereClause += ` AND wt.status = $${params.length}`;
+    }
 
-    // Get total count
+    // Count
     const countResult = await query(
-      `SELECT COUNT(*) as total
-       FROM wallet_transactions
-       WHERE type = 'withdraw'
-         ${status !== "all" ? `AND status = $1` : ""}`,
-      status !== "all" ? [status] : []
+      `SELECT COUNT(*) as total FROM wallet_transactions wt JOIN users u ON wt.user_id = u.id ${whereClause}`,
+      params
     );
-
     const total = parseInt(countResult.rows[0]?.total || 0);
 
-    // Parse description to extract payment details
+    // Data
+    params.push(limit, offset);
+    const result = await query(
+      `SELECT 
+        wt.id, wt.user_id, wt.amount, wt.balance_before, wt.balance_after,
+        wt.status, wt.description, wt.admin_note, wt.processed_at, wt.created_at,
+        u.nickname, u.full_name, u.email, u.phone
+      FROM wallet_transactions wt
+      JOIN users u ON wt.user_id = u.id
+      ${whereClause}
+      ORDER BY wt.created_at DESC
+      LIMIT $${params.length - 1} OFFSET $${params.length}`,
+      params
+    );
+
     const withdrawals = result.rows.map((row) => {
       let paymentDetails = {};
       try {
-        // Extract JSON from description if present
         const jsonMatch = row.description?.match(/\{.*\}/);
         if (jsonMatch) {
           paymentDetails = JSON.parse(jsonMatch[0]);
         } else {
-          // Fallback: parse description text
           const methodMatch = row.description?.match(/Withdrawal to (.+?)(?: -|$)/);
-          if (methodMatch) {
-            paymentDetails.method = methodMatch[1];
-          }
+          if (methodMatch) paymentDetails.method = methodMatch[1];
           const mobileMatch = row.description?.match(/Mobile: (\d+)/);
-          if (mobileMatch) {
-            paymentDetails.phone_number = mobileMatch[1];
-          }
+          if (mobileMatch) paymentDetails.phone_number = mobileMatch[1];
           const accountMatch = row.description?.match(/Account: (.+?)(?: -|$)/);
-          if (accountMatch) {
-            paymentDetails.account_number = accountMatch[1];
-          }
+          if (accountMatch) paymentDetails.account_number = accountMatch[1];
         }
       } catch (e) {
-        // If parsing fails, use description as is
         paymentDetails.description = row.description;
       }
 
@@ -118,18 +107,10 @@ export async function GET(request) {
 
     return NextResponse.json({
       withdrawals,
-      pagination: {
-        page,
-        limit,
-        total,
-        totalPages: Math.ceil(total / limit),
-      },
+      pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
     });
   } catch (error) {
     console.error("Get withdrawals error:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch withdrawals" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to fetch withdrawals" }, { status: 500 });
   }
 }

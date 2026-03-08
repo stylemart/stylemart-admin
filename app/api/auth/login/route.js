@@ -1,6 +1,6 @@
 // ============================================================
 // POST /api/auth/login
-// Admin login endpoint
+// Admin login endpoint (Super Admin + Sub Admin)
 // ============================================================
 
 import { NextResponse } from "next/server";
@@ -50,7 +50,7 @@ export async function POST(request) {
       [admin.id]
     );
 
-    // Create JWT token
+    // Create JWT token (includes role + parent_admin_id)
     const token = createToken(admin);
 
     // Return admin info + token
@@ -64,13 +64,14 @@ export async function POST(request) {
         email: admin.email,
         role: admin.role,
         avatar_url: admin.avatar_url,
+        parent_admin_id: admin.parent_admin_id,
+        storefront_code: admin.storefront_code,
       },
     });
   } catch (error) {
     console.error("Login error:", error);
-    console.error("Error details:", error.message);
     return NextResponse.json(
-      { error: `Server error: ${error.message}. Check console for details.` },
+      { error: `Server error: ${error.message}` },
       { status: 500 }
     );
   }

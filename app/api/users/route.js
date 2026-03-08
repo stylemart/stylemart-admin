@@ -1,13 +1,25 @@
 // ============================================================
 // /api/users
-// GET - List all users (admin only)
+// GET - List users (filtered by admin role)
+// Super Admin: sees ALL users
+// Sub Admin: sees ONLY users linked to them via admin_owner_id
 // ============================================================
 
 import { NextResponse } from "next/server";
 import { query } from "@/lib/db";
+import { requireAdmin } from "@/lib/auth";
 
 export async function GET(request) {
   try {
+    const authResult = await requireAdmin(request);
+    if (authResult.error) {
+      return NextResponse.json(
+        { error: authResult.error },
+        { status: authResult.status }
+      );
+    }
+
+    const admin = authResult.admin;
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get("page")) || 1;
     const limit = parseInt(searchParams.get("limit")) || 20;
@@ -16,6 +28,17 @@ export async function GET(request) {
 
     let whereClause = "WHERE 1=1";
     const params = [];
+
+    // Sub Admin filter: only see their own users
+    if (admin.role === "sub_admin") {
+      // Ensure admin.id is treated as integer for comparison
+      const adminId = parseInt(admin.id);
+      params.push(adminId);
+      whereClause += ` AND u.admin_owner_id = $${params.length}`;
+      console.log(`[Sub Admin Filter] Admin ID: ${adminId} (type: ${typeof adminId}), Role: ${admin.role}`);
+    } else {
+      console.log(`[Super Admin] Seeing all users`);
+    }
 
     if (search) {
       params.push(`%${search}%`);
@@ -38,6 +61,7 @@ export async function GET(request) {
           u.is_verified,
           u.referral_code,
           u.referred_by,
+          u.admin_owner_id,
           u.language,
           u.currency,
           u.last_login_at,
@@ -60,7 +84,6 @@ export async function GET(request) {
       params
     );
 
-    // Map DB fields to display-friendly values
     const users = result.rows.map((u) => ({
       ...u,
       credit_score: u.credit_score ?? 10,

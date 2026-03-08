@@ -1,6 +1,6 @@
 // ============================================================
 // POST /api/auth/setup
-// Create the first admin user (one-time setup)
+// Create the first Super Admin user (one-time setup)
 // ============================================================
 
 import { NextResponse } from "next/server";
@@ -19,6 +19,13 @@ export async function POST(request) {
       );
     }
 
+    if (password.length < 6) {
+      return NextResponse.json(
+        { error: "Password must be at least 6 characters" },
+        { status: 400 }
+      );
+    }
+
     // Check if any admin users already exist
     const existingAdmins = await query("SELECT COUNT(*) as count FROM admin_users");
     if (parseInt(existingAdmins.rows[0].count) > 0) {
@@ -31,15 +38,15 @@ export async function POST(request) {
     // Hash password
     const passwordHash = await bcrypt.hash(password, 10);
 
-    // Create admin user
+    // Create super admin user
     const result = await query(
-      `INSERT INTO admin_users (username, password_hash, full_name, email, role)
-       VALUES ($1, $2, $3, $4, $5) RETURNING id, username, full_name, email, role`,
-      [username, passwordHash, full_name || null, email || null, "super_admin"]
+      `INSERT INTO admin_users (username, password_hash, full_name, email, role, parent_admin_id)
+       VALUES ($1, $2, $3, $4, 'super_admin', NULL) RETURNING id, username, full_name, email, role`,
+      [username, passwordHash, full_name || "Super Admin", email || null]
     );
 
     return NextResponse.json({
-      message: "Admin user created successfully! You can now login.",
+      message: "Super Admin created successfully! You can now login.",
       admin: result.rows[0],
     }, { status: 201 });
   } catch (error) {
