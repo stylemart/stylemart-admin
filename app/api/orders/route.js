@@ -9,6 +9,8 @@ import { NextResponse } from "next/server";
 import { query } from "@/lib/db";
 import { requireAdmin } from "@/lib/auth";
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request) {
   try {
     const authResult = await requireAdmin(request);
@@ -31,8 +33,13 @@ export async function GET(request) {
 
     // Sub Admin filter: only see orders from their users
     if (admin.role === "sub_admin") {
-      params.push(admin.id);
+      // Ensure admin.id is treated as integer for comparison
+      const adminId = parseInt(admin.id);
+      params.push(adminId);
       whereClause += ` AND u.admin_owner_id = $${params.length}`;
+      console.log(`[Orders API] Sub Admin filter - Admin ID: ${adminId} (type: ${typeof adminId}), Role: ${admin.role}`);
+    } else {
+      console.log(`[Orders API] Super Admin - Seeing all orders`);
     }
 
     if (status) {
@@ -40,15 +47,19 @@ export async function GET(request) {
       whereClause += ` AND o.status = $${params.length}`;
     }
 
+    console.log(`[Orders API] Query: SELECT COUNT(*) FROM orders o LEFT JOIN users u ON o.user_id = u.id ${whereClause}`);
+    console.log(`[Orders API] Params:`, params);
+
     const countResult = await query(
       `SELECT COUNT(*) as total FROM orders o LEFT JOIN users u ON o.user_id = u.id ${whereClause}`,
       params
     );
     const total = parseInt(countResult.rows[0].total);
+    console.log(`[Orders API] Total orders found: ${total}`);
 
     params.push(limit, offset);
     const result = await query(
-      `SELECT o.*, u.full_name as customer_name, u.email as customer_email, u.nickname as customer_nickname
+      `SELECT o.*, u.full_name as customer_name, u.email as customer_email, u.nickname as customer_nickname, u.admin_owner_id
        FROM orders o
        LEFT JOIN users u ON o.user_id = u.id
        ${whereClause}
@@ -56,6 +67,16 @@ export async function GET(request) {
        LIMIT $${params.length - 1} OFFSET $${params.length}`,
       params
     );
+
+    console.log(`[Orders API] Orders returned: ${result.rows.length}`);
+    if (result.rows.length > 0) {
+      console.log(`[Orders API] Sample order:`, {
+        order_id: result.rows[0].id,
+        user_id: result.rows[0].user_id,
+        admin_owner_id: result.rows[0].admin_owner_id,
+        customer_nickname: result.rows[0].customer_nickname,
+      });
+    }
 
     return NextResponse.json({
       orders: result.rows,
