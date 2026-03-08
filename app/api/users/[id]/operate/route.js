@@ -191,12 +191,17 @@ export async function POST(request, { params }) {
 
       // ── Refresh IP Attribution ──
       case "refresh_ip": {
-        // Just update the last IP check timestamp
+        // Get admin's IP (the one requesting the refresh)
+        // Note: This will be the admin's IP, not the user's IP
+        // To get user's actual IP, they need to log in again
         await query(
           "UPDATE users SET updated_at = NOW() WHERE id = $1",
           [userId]
         );
-        return NextResponse.json({ message: "IP attribution refreshed" });
+        return NextResponse.json({ 
+          message: "IP attribution refreshed. User's IP will be updated on their next login.",
+          note: "The IP address shown is from the user's last login. It will update automatically when they log in again."
+        });
       }
 
       default:

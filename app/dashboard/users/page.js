@@ -27,6 +27,7 @@ import {
   FiX,
   FiEye,
   FiEyeOff,
+  FiCopy,
 } from "react-icons/fi";
 
 export default function UsersPage() {
@@ -522,8 +523,26 @@ export default function UsersPage() {
                     </td>
                     <td className="px-5 py-4 text-sm text-gray-600 whitespace-nowrap">{user.credit_score ?? 10}</td>
                     <td className="px-5 py-4 text-sm text-gray-600 font-mono whitespace-nowrap">{user.referral_code || "—"}</td>
-                    <td className="px-5 py-4 text-sm text-gray-500 whitespace-nowrap max-w-[160px]">
-                      <div className="truncate" title={user.last_ip || ""}>{user.last_ip || "—"}</div>
+                    <td className="px-5 py-4 text-sm text-gray-600 whitespace-nowrap max-w-[160px]">
+                      {user.last_ip && user.last_ip !== "unknown" ? (
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono text-xs bg-gray-100 px-2 py-1 rounded text-gray-700">
+                            {user.last_ip}
+                          </span>
+                          <button
+                            onClick={() => {
+                              navigator.clipboard.writeText(user.last_ip);
+                              alert(`Copied: ${user.last_ip}`);
+                            }}
+                            className="text-gray-400 hover:text-blue-500 transition-colors"
+                            title="Copy IP"
+                          >
+                            <FiCopy size={14} />
+                          </button>
+                        </div>
+                      ) : (
+                        <span className="text-gray-400">—</span>
+                      )}
                     </td>
                     <td className="px-5 py-4 text-sm whitespace-nowrap">
                       <span className={user.is_dummy ? "text-orange-500" : "text-gray-600"}>
